@@ -29,7 +29,11 @@ class Controller():
     """
     def __init__(self, port, verbose):
         """
-        Initialize the GPIO.
+        Initialize the GPIO controller.
+
+        Inputs:
+            port:       The UDP port to receive packets from.
+            verbose:    Whether or not to print debugging info.
         """
         self.verbose = verbose
 
@@ -48,7 +52,7 @@ class Controller():
         GPIO.setup(self.gpio_pin, GPIO.OUT)
 
         # Load the configuration file. If it does not exist, create it
-        self.config = '/usr/local/etc/powerswitch.status'
+        self._config = '/usr/local/etc/powerswitch.status'
         self.gpio_state = self.check_status()
         self.set_gpio()
 
@@ -58,7 +62,12 @@ class Controller():
 
     @config.setter
     def config(self, value):
-        print "derp derp derp"
+        """
+        Set the configuration file.
+
+        Input:
+            value:  Path to the config.
+        """
         if os.path.exists(value):
             if not os.path.isfile(value):
                 raise IOError(value + ' is not a regular file.')
@@ -70,6 +79,12 @@ class Controller():
 
     @gpio_state.setter
     def gpio_state(self, value):
+        """
+        Set the GPIO state.
+
+        Input:
+            value:  Status of the GPIO pin of the switch.
+        """
         if value == GPIO.LOW or value == GPIO.HIGH:
             self._gpio_state = value
         else:
@@ -77,7 +92,7 @@ class Controller():
 
     def check_status(self):
         """
-        Check the status of the (existing) configuration file.
+        Check the GPIO pin status of the (existing) configuration file.
         """
         try:
             with open(self.config) as f:
@@ -88,9 +103,23 @@ class Controller():
 
     def relay(self):
         """
-        Receive commands via UDP.
-        Send commands to the arduino.
-        Send back the result to the client.
+        The relay function receives commands via UDP, interprets the
+        commands and executes them, and then sends the result back
+        to the sender address. The relay is intended on being part
+        of a loop and returns whether or not to continue the loop.
+        Quit commands can only be done from the same machine that is
+        running this function.
+
+        Commands:
+            on
+            off
+            toggle
+            status
+            quit
+
+        Return:
+            true:   The relay modified the status of the lightswitch.
+            false:  The relay received a quit command.
         """
         # Receive command from socket.
         command, addr = self.rx.recvfrom(1024)
@@ -135,7 +164,7 @@ class Controller():
 
     def set_gpio(self):
         """
-        Set the GPIO and write down the status.
+        Set the GPIO pin state and write down the status.
         """
         GPIO.output(self.gpio_pin, self.gpio_state)
         with open(self.config, 'w') as f:
