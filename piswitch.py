@@ -33,25 +33,41 @@ class Controller():
 
         # Load the configuration file. If it does not exist, create it
         self.config = '/usr/local/etc/powerswitch.status'
-        self.gpio_state = GPIO.LOW
-        if os.path.exists(self.config):
-            if os.path.isfile(self.config):
-                self.gpio_state = self.check_status()
-            else:
-                raise IOError(self.config + ' is not a regular file.')
-
-        # Make sure pins are off by default.
+        self.gpio_state = self.check_status()
         self.set_gpio()
+
+    @property
+    def config(self):
+        return self._config
+
+    @config.setter
+    def config(self, value):
+        print "derp derp derp"
+        if os.path.exists(value):
+            if not os.path.isfile(value):
+                raise IOError(value + ' is not a regular file.')
+        self._config = value
+
+    @property
+    def gpio_state(self):
+        return self._gpio_state
+
+    @gpio_state.setter
+    def gpio_state(self, value):
+        if value == GPIO.LOW or value == GPIO.HIGH:
+            self._gpio_state = value
+        else:
+            raise ValueError('Invalid GPIO state.')
 
     def check_status(self):
         """
         Check the status of the (existing) configuration file.
         """
-        with open(self.config) as f:
-            try:
+        try:
+            with open(self.config) as f:
                 prev_status = int(f.read()[0])
-            except:
-                prev_status = GPIO.LOW
+        except:
+            prev_status = GPIO.LOW
         return prev_status
 
     def relay(self):
