@@ -20,6 +20,33 @@ where ``$PORT`` is whatever port that the script will be run on. This port needs
 to be opened in the raspberry pi's firewall (if applicable) in order for
 computers on the same local network to be able to send commands.
 
+The ``powerswitch_tx.py`` script is used to modify the state of the raspberry pi
+switch. The basic usage is
+
+```
+$ powerswitch_tx.py -i $IP_ADDR -p $PORT -c $COMMAND
+```
+
+where ``$IP_ADDR`` is the IP of the server running ``powerswitch_rx.py``,
+``$PORT`` is the port to send commands over, and ``$COMMAND`` is the command to
+send to the server. The commands that can be sent are:
+
+```
+on              Turn the switch on.
+off             Turn the switch off.
+toggle          Toggle the switch state.
+status          Read the switch state.
+quit            Quit the server, can only be run locally.
+```
+
+
+Module
+------
+
+Most of the functionality of the receiver has been moved to a module in case
+more specific usage is needed. This module is the file ``piswitch.py``. The
+documentation for this module is done via the docstrings.
+
 Installation
 ------------
 
