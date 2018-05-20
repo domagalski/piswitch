@@ -43,10 +43,15 @@ if __name__ == '__main__':
 
     # Send command to UDP receiver.
     tx = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    tx.settimeout(5)
     tx.sendto(command, (addr, port))
 
     # Receive status of the arduino power switch.
-    status, _ = tx.recvfrom(1024)
+    try:
+        status, _ = tx.recvfrom(1024)
+    except socket.timeout:
+        print 'ERROR: Cannot receive packets from server.'
+        sys.exit(1)
     if status == 'err':
         if command == 'quit':
             print 'ERROR: Receiver can only be quit from localhost.'
